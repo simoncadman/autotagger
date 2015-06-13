@@ -3,6 +3,7 @@
 import sys
 import argparse
 import binascii
+import os
 from git import Repo
 from distutils.version import StrictVersion
 
@@ -22,11 +23,11 @@ def newMinorTag(tag):
     tagparts = tag.split('.')
     return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1]), int(tagparts[2])+1)
 
-repo = Repo(args.repo)
+repo = Repo(os.path.abspath(args.repo))
 repo.remote().pull()
 ui = repo.git
 tags = []
-taglist = ui.ls_remote(args.repo, tags=True)
+taglist = ui.ls_remote(os.path.abspath(args.repo), tags=True)
 for tagitem in taglist.splitlines():
     tagparts = tagitem.split()
     if '{}' not in tagparts[1]:
