@@ -64,6 +64,5 @@ if ismajor:
 
 repo.create_tag(tagname, ref=args.commit,
                                       message="Tagged %s automatically" % tagname )
-print("Created tag %s" % tagname)
 info = repo.remote().push(tags=True)
-print(info.summary)
+print("%s" % tagname)
