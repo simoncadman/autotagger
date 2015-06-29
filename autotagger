@@ -9,19 +9,21 @@ from distutils.version import StrictVersion
 
 parser = argparse.ArgumentParser(description='Create next tag name')
 parser.add_argument('repo', metavar='repo', type=str,
-                   help='Repository path')
+                    help='Repository path')
 parser.add_argument('commit', metavar='commit', type=str,
-                   help='Commit for new tag')
+                    help='Commit for new tag')
 
 args = parser.parse_args()
 
+
 def newMajorTag(tag):
     tagparts = tag.split('.')
-    return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1])+1, 0)
+    return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1]) + 1, 0)
+
 
 def newMinorTag(tag):
     tagparts = tag.split('.')
-    return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1]), int(tagparts[2])+1)
+    return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1]), int(tagparts[2]) + 1)
 
 versionparser = StrictVersion()
 repo = Repo(os.path.abspath(args.repo))
@@ -47,28 +49,31 @@ for tag in repo.tags:
         print("Commit already tagged as %s" % tag.name)
         sys.exit(1)
 
-latesttag = tags[-1]
+tagname = "0.0.1"
 
-majortag = newMajorTag(latesttag)
-minortag = newMinorTag(latesttag)
+if len(tags) > 0:
+    latesttag = tags[-1]
 
-latesttag = repo.commit(latesttag)
-commit = repo.commit(args.commit)
+    majortag = newMajorTag(latesttag)
+    minortag = newMinorTag(latesttag)
 
-ismajor = False
-migrationpath = '/migrations/'
+    latesttag = repo.commit(latesttag)
+    commit = repo.commit(args.commit)
 
-for diff in latesttag.diff(commit):
-    if migrationpath in diff.a_path or migrationpath in diff.b_path:
-        ismajor = True
-        break
+    ismajor = False
+    migrationpath = '/migrations/'
 
-tagname = minortag
+    for diff in latesttag.diff(commit):
+        if migrationpath in diff.a_path or migrationpath in diff.b_path:
+            ismajor = True
+            break
 
-if ismajor:
-    tagname = majortag
+    tagname = minortag
+
+    if ismajor:
+        tagname = majortag
 
 repo.create_tag(tagname, ref=args.commit,
-                                      message="Tagged %s automatically" % tagname )
+                message="Tagged %s automatically" % tagname)
 info = repo.remote().push(tags=True)
 print("%s" % tagname)
