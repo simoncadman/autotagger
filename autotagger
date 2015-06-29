@@ -51,15 +51,15 @@ for tag in repo.tags:
         sys.exit(1)
 
 tagname = "0.0.1"
+commit = repo.commit(args.commit)
 
 if len(tags) > 0:
-    latesttag = tags[-1]
+    latesttagname = tags[-1]
 
-    majortag = newMajorTag(latesttag)
-    minortag = newMinorTag(latesttag)
+    majortag = newMajorTag(latesttagname)
+    minortag = newMinorTag(latesttagname)
 
-    latesttag = repo.commit(latesttag)
-    commit = repo.commit(args.commit)
+    latesttag = repo.commit(latesttagname)
 
     ismajor = False
     migrationpath = '/migrations/'
@@ -72,10 +72,13 @@ if len(tags) > 0:
     tagname = minortag
 
     if ismajor:
+        sys.stderr.write("Found migration change between %s and %s\n" % (latesttagname, commit.hexsha))
         tagname = majortag
+    else:
+        sys.stderr.write("No migration changes found between %s and %s\n" % (latesttagname, commit.hexsha))
 
 if not args.pretend:
-    repo.create_tag(tagname, ref=args.commit,
+    repo.create_tag(tagname, ref=commit.hexsha,
                     message="Tagged %s automatically" % tagname)
     info = repo.remote().push(tags=True)
 else:
