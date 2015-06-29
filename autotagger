@@ -23,6 +23,7 @@ def newMinorTag(tag):
     tagparts = tag.split('.')
     return '%i.%i.%i' % (int(tagparts[0]), int(tagparts[1]), int(tagparts[2])+1)
 
+versionparser = StrictVersion()
 repo = Repo(os.path.abspath(args.repo))
 repo.remote().pull()
 ui = repo.git
@@ -31,14 +32,18 @@ taglist = ui.ls_remote(os.path.abspath(args.repo), tags=True)
 for tagitem in taglist.splitlines():
     tagparts = tagitem.split()
     if '{}' not in tagparts[1]:
-        tags.append(tagparts[1].split('/')[2])
+        try:
+            versionparser.parse(tagparts[1].split('/')[2])
+            tags.append(tagparts[1].split('/')[2])
+        except ValueError:
+            pass
 
 tags.sort(key=StrictVersion)
 
 actualcommit = repo.commit(args.commit).binsha
 
 for tag in repo.tags:
-    if tag.tag.object.binsha == actualcommit:
+    if tag.tag and tag.tag.object.binsha == actualcommit:
         print("Commit already tagged as %s" % tag.name)
         sys.exit(1)
 
