@@ -12,6 +12,7 @@ parser.add_argument('repo', metavar='repo', type=str,
                     help='Repository path')
 parser.add_argument('commit', metavar='commit', type=str,
                     help='Commit for new tag')
+parser.add_argument('--pretend', action='store_true')
 
 args = parser.parse_args()
 
@@ -73,7 +74,10 @@ if len(tags) > 0:
     if ismajor:
         tagname = majortag
 
-repo.create_tag(tagname, ref=args.commit,
-                message="Tagged %s automatically" % tagname)
-info = repo.remote().push(tags=True)
+if not args.pretend:
+    repo.create_tag(tagname, ref=args.commit,
+                    message="Tagged %s automatically" % tagname)
+    info = repo.remote().push(tags=True)
+else:
+    sys.stderr.write("Not creating tag as in pretend mode\n")
 print("%s" % tagname)
